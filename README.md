@@ -1,10 +1,13 @@
 #📊 Fairness-Aware Income Classification using TensorFlow, TFMA, and MinDiff
+
 This repository presents a pipeline for training and evaluating a binary income classification model using the ACS Income dataset. The workflow integrates TensorFlow, TensorFlow Model Analysis (TFMA), and MinDiff (from tensorflow_model_remediation) to assess and mitigate group-based unfairness, particularly with respect to sensitive attributes such as gender.
 
 🔍 Problem Statement
+
 The goal is to predict whether an individual's income exceeds $50,000 based on various demographic and socioeconomic features from the ACS 2018 Public Use Microdata Sample. Beyond standard classification performance, we aim to quantify and reduce predictive bias across groups defined by the SEX attribute.
 
 🧱 Pipeline Overview
+
 Data Ingestion and Labeling
 Load ACS 2018 data and binarize income label (PINCP > 50,000 → 1, else 0).
 
@@ -24,6 +27,7 @@ Incorporate MMD-based regularization via MinDiffModel to minimize distributional
 pip install pandas tensorflow tensorflow_model_analysis tensorflow_model_remediation protobuf
 
 🧾 Dataset Details
+
 Source: Google MLCC ACS Income Dataset
 
 Task: Binary classification (PINCP > 50000)
@@ -47,6 +51,7 @@ Optimizer: Adam
 Metrics: BinaryAccuracy, AUC
 
 🧪 Evaluation with TFMA
+
 Model predictions are post-processed and sliced on the SEX attribute using the following EvalConfig:
 
 model_specs {
