@@ -42,7 +42,7 @@ Task: Binary classification (PINCP > 50000)
 
 Sensitive Attribute: SEX (1.0 = Male, 2.0 = Female)
 
-🧠 Model Architecture
+## 🧠 Model Architecture
 scss
 Copy
 Edit
@@ -63,7 +63,7 @@ Optimizer: Adam
 
 Metrics: BinaryAccuracy, AUC
 
-🧪 Evaluation with TFMA
+## 🧪 Evaluation with TFMA
 Model predictions are post-processed and sliced on the SEX attribute using the following EvalConfig:
 
 protobuf
@@ -90,7 +90,7 @@ python
 Copy
 Edit
 tfma.addons.fairness.view.widget_view.render_fairness_indicator(result)
-⚖️ Fairness Remediation using MinDiff
+## ⚖️ Fairness Remediation using MinDiff
 MinDiff introduces a distributional alignment loss between the model outputs of sensitive vs. non-sensitive groups.
 
 MinDiff Training
@@ -110,7 +110,7 @@ min_diff_model = min_diff.keras.MinDiffModel(
 )
 Evaluated identically to the base model via TFMA.
 
-📊 Results Interpretation
+## 📊 Results Interpretation
 Model performance is evaluated on:
 
 Global metrics: Accuracy, AUC
@@ -119,14 +119,14 @@ Group fairness: Fairness Indicators across SEX
 
 Comparison before and after MinDiff-based remediation
 
-🧠 Key Concepts
+## 🧠 Key Concepts
 Fairness Indicators: Visual tools to monitor disparity in model metrics across groups.
 
 MinDiff: A regularization strategy that minimizes distributional divergence for fairness.
 
 TFMA: A scalable evaluation toolkit for sliced and aggregate model metrics.
 
-📁 File Structure
+## 📁 File Structure
 vbnet
 Copy
 Edit
