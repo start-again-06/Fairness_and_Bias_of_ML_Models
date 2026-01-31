@@ -1,74 +1,55 @@
-# 📊 Fairness-Aware Income Classification using TensorFlow, TFMA, and MinDiff
+# Fairness-Aware Income Classification using TensorFlow, TFMA, and MinDiff
 
-This repository presents a pipeline for training and evaluating a binary income classification model using the ACS Income dataset. The workflow integrates **TensorFlow**, **TensorFlow Model Analysis (TFMA)**, and **MinDiff** (from `tensorflow_model_remediation`) to assess and mitigate group-based unfairness, particularly with respect to sensitive attributes such as gender.
+This repository presents an end-to-end pipeline for training and evaluating a binary income classification model using the ACS Income dataset. The workflow integrates TensorFlow, TensorFlow Model Analysis (TFMA), and MinDiff (from `tensorflow_model_remediation`) to evaluate and mitigate group-based unfairness, particularly with respect to sensitive attributes such as gender.
 
----
+## Problem Statement
+The objective is to predict whether an individual's income exceeds $50,000 based on demographic and socioeconomic features from the ACS 2018 Public Use Microdata Sample. In addition to standard classification performance, the project focuses on quantifying and reducing predictive bias across groups defined by the `SEX` attribute.
 
-## 🔍 Problem Statement
+## Pipeline Overview
 
-The goal is to predict whether an individual's income exceeds \$50,000 based on various demographic and socioeconomic features from the **ACS 2018 Public Use Microdata Sample**. Beyond standard classification performance, we aim to **quantify and reduce predictive bias** across groups defined by the `SEX` attribute.
+### Data Ingestion and Labeling
+- Load ACS 2018 data  
+- Binarize income label (`PINCP > 50000 → 1`, else `0`)  
 
----
+### Model Construction
+- Dense feedforward neural network built using the Keras Functional API  
 
-## 🧱 Pipeline Overview
+### Training and Evaluation
+- Train on 80% of the data  
+- Evaluate on the remaining 20% using Accuracy and AUC  
 
-1. **Data Ingestion and Labeling**  
-   Load ACS 2018 data and binarize income label (`PINCP > 50,000` → 1, else 0).
-   
-2. **Model Construction**  
-   A dense feedforward neural network built using the Keras Functional API.
+### Fairness Evaluation
+- Use TFMA Fairness Indicators to evaluate metrics across gender slices  
 
-3. **Training and Evaluation**  
-   Model trained on 80% of the data; performance evaluated on the held-out 20% using accuracy and AUC.
+### Bias Mitigation using MinDiff
+- Apply MMD-based regularization using `MinDiffModel`  
+- Minimize distributional divergence between predictions across sensitive groups  
 
-4. **Fairness Evaluation**  
-   Use TFMA’s Fairness Indicators to evaluate metrics across gender slices.
+## Dataset Details
+- **Source:** Google MLCC ACS Income Dataset  
+- **Task:** Binary classification (`PINCP > 50000`)  
+- **Sensitive Attribute:** `SEX` (`1.0 = Male`, `2.0 = Female`) 
 
-5. **Bias Mitigation using MinDiff**  
-   Incorporate **MMD-based regularization** via `MinDiffModel` to minimize distributional divergence between predictions across sensitive groups.
+## Model Architecture
+Input (all numerical features)  
+↓  
+Normalization Layer  
+↓  
+Dense(64, relu)  
+↓  
+Dense(32, relu)  
+↓  
+Dense(1, sigmoid)  
 
----
+## Compilation Details
+- Loss: BinaryCrossentropy  
+- Optimizer: Adam  
+- Metrics: BinaryAccuracy, AUC  
 
-## 📦 Dependencies
+## Evaluation with TFMA
+Model predictions are post-processed and evaluated using TensorFlow Model Analysis (TFMA) with slicing based on the `SEX` attribute to assess group-wise performance and fairness.
 
-Install via pip:
-
-```bash
-pip install pandas tensorflow tensorflow_model_analysis tensorflow_model_remediation protobuf
-🧾 Dataset Details
-Source: Google MLCC ACS Income Dataset
-
-Task: Binary classification (PINCP > 50000)
-
-Sensitive Attribute: SEX (1.0 = Male, 2.0 = Female)
-
-🧠 Model Architecture
-scss
-Copy
-Edit
-Input (all numerical features)
-↓
-Normalization Layer
-↓
-Dense(64, relu)
-↓
-Dense(32, relu)
-↓
-Dense(1, sigmoid)
-Compiled with:
-
-Loss: BinaryCrossentropy
-
-Optimizer: Adam
-
-Metrics: BinaryAccuracy, AUC
-
-🧪 Evaluation with TFMA
-Model predictions are post-processed and sliced on the SEX attribute using the following EvalConfig:
-
-protobuf
-Copy
-Edit
+### EvalConfig
 model_specs {
   prediction_key: "PRED"
   label_key: "PINCP"
@@ -84,53 +65,37 @@ metrics_specs {
 slicing_specs {
   feature_keys: "SEX"
 }
-Visualized using:
 
-python
-Copy
-Edit
-tfma.addons.fairness.view.widget_view.render_fairness_indicator(result)
-⚖️ Fairness Remediation using MinDiff
-MinDiff introduces a distributional alignment loss between the model outputs of sensitive vs. non-sensitive groups.
+### Visualization
 
-MinDiff Training
-Groups: Datasets manually split into sensitive (SEX=2.0) and non-sensitive (SEX=1.0) positive examples.
+## Fairness Remediation using MinDiff
 
-Loss Function: MMDLoss (Maximum Mean Discrepancy)
+MinDiff introduces a distributional alignment loss between the model outputs of sensitive and non-sensitive groups to mitigate predictive bias.
 
-Objective: Align representation and output distributions while maintaining classification fidelity.
+### MinDiff Training
+- Groups:
+  - Sensitive group: SEX = 2.0
+  - Non-sensitive group: SEX = 1.0
+- Loss Function: MMDLoss (Maximum Mean Discrepancy)
+- Objective: Align output distributions while preserving classification performance
 
-python
-Copy
-Edit
+### MinDiff Model
+
 min_diff_model = min_diff.keras.MinDiffModel(
     original_model=base_model,
     loss=min_diff.losses.MMDLoss(),
     loss_weight=1.0
 )
-Evaluated identically to the base model via TFMA.
 
-📊 Results Interpretation
-Model performance is evaluated on:
+The MinDiff model is evaluated using the same TFMA pipeline as the base model.
 
-Global metrics: Accuracy, AUC
+## Results Interpretation
+- Global Metrics: Accuracy, AUC
+- Group Fairness: Fairness Indicators across SEX
+- Comparison: Model performance before and after MinDiff-based bias mitigation
 
-Group fairness: Fairness Indicators across SEX
-
-Comparison before and after MinDiff-based remediation
-
-🧠 Key Concepts
-Fairness Indicators: Visual tools to monitor disparity in model metrics across groups.
-
-MinDiff: A regularization strategy that minimizes distributional divergence for fairness.
-
-TFMA: A scalable evaluation toolkit for sliced and aggregate model metrics.
-
-📁 File Structure
-vbnet
-Copy
-Edit
-.
-├── main.py               # End-to-end pipeline implementation
-├── README.md             # Project documentation
+## Key Concepts
+- Fairness Indicators: Tools for monitoring metric disparities across groups
+- MinDiff: Regularization strategy for reducing distributional divergence
+- TFMA: Scalable framework for sliced and aggregate model evaluation
 
