@@ -49,25 +49,6 @@ Dense(1, sigmoid)
 ## Evaluation with TFMA
 Model predictions are post-processed and evaluated using TensorFlow Model Analysis (TFMA) with slicing based on the `SEX` attribute to assess group-wise performance and fairness.
 
-### EvalConfig
-model_specs {
-  prediction_key: "PRED"
-  label_key: "PINCP"
-}
-metrics_specs {
-  metrics { class_name: "BinaryAccuracy" }
-  metrics { class_name: "AUC" }
-  metrics {
-    class_name: "FairnessIndicators"
-    config: '{"thresholds": [0.50]}'
-  }
-}
-slicing_specs {
-  feature_keys: "SEX"
-}
-
-### Visualization
-
 ## Fairness Remediation using MinDiff
 
 MinDiff introduces a distributional alignment loss between the model outputs of sensitive and non-sensitive groups to mitigate predictive bias.
